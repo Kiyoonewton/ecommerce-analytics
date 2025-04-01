@@ -1,0 +1,92 @@
+scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
+
+type Query {
+  consolidatedOrder(id: ID! @eq): ConsolidatedOrder @find
+  
+  orderAnalytics(
+    dateFrom: DateTime
+    dateTo: DateTime
+  ): OrderAnalytics!
+}
+
+type PaginatorInfo {
+  total: Int!
+  count: Int!
+  currentPage: Int!
+  lastPage: Int!
+  perPage: Int!
+  hasMorePages: Boolean!
+  firstItem: Int
+  lastItem: Int
+}
+
+type ConsolidatedOrder {
+  id: ID!
+  order_id: ID!
+  customer_id: ID!
+  customer_name: String!
+  customer_email: String!
+  product_id: ID!
+  product_name: String!
+  sku: String!
+  quantity: Int!
+  item_price: Float!
+  line_total: Float!
+  order_date: DateTime!
+  order_status: String!
+  order_total: Float!
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+type OrderAnalytics {
+  totalOrders: Int!
+  totalRevenue: Float!
+  averageOrderValue: Float!
+  topProducts: [ProductAnalytics!]!
+  topCustomers: [CustomerAnalytics!]!
+  salesByStatus: [StatusAnalytics!]!
+}
+
+type ProductAnalytics {
+  product_id: ID!
+  product_name: String!
+  sku: String!
+  total_quantity: Int!
+  total_revenue: Float!
+}
+
+type CustomerAnalytics {
+  customer_id: ID!
+  customer_name: String!
+  customer_email: String!
+  order_count: Int!
+  total_spend: Float!
+}
+
+type StatusAnalytics {
+  status: String!
+  order_count: Int!
+  total_revenue: Float!
+}
+
+type ConsolidatedOrderPaginator {
+  data: [ConsolidatedOrder!]!
+  paginatorInfo: PaginatorInfo!
+}
+
+extend type Query {
+  consolidatedOrders(
+    page: Int
+    perPage: Int = 25
+    dateFrom: DateTime
+    dateTo: DateTime
+    customerEmail: String
+    sku: String
+    orderStatus: String
+  ): ConsolidatedOrderPaginator! 
+    @paginate(
+      builder: "App\\GraphQL\\Queries\\ConsolidatedOrdersQuery"
+      defaultCount: 25
+    )
+}
